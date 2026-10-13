@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Академия Супер-Навыков 🌟</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+  <style>
+    :root {
+      --primary: #ff6b81;
+      --secondary: #70a1ff;
+      --success: #2ed573;
+      --warning: #ffa502;
+      --bg: #f1f2f6;
+      --card-bg: #ffffff;
+      --text: #2f3542;
+      --header-bg: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    }
+    
+    body.test-mode {
+      --bg: #2d3436; --card-bg: #dfe6e9; --text: #2d3436;
+      --header-bg: linear-gradient(135deg, #d63031, #ff7675);
+    }
+    body.test-mode .section-title { color: #b2bec3; }
+    body.test-mode .tab-btn { background: #636e72; color: #dfe6e9; }
+    body.test-mode .tab-btn.active { background: #d63031; color: white; }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); margin: 0; padding: 16px; display: flex; justify-content: center; transition: background 0.3s; }
+    .container { width: 100%; max-width: 650px; padding-bottom: 40px; }
+    
+    /* Шапка */
+    .header {
+      background: var(--header-bg); color: white; border-radius: 20px; padding: 16px;
+      text-align: center; box-shadow: 0 8px 16px rgba(0,0,0, 0.25); position: sticky; top: 10px; z-index: 100;
+    }
+    .test-badge {
+      display: none; background: #ffea00; color: #d63031; font-weight: bold; font-size: 12px;
+      padding: 4px 10px; border-radius: 12px; margin-bottom: 8px; text-transform: uppercase;
+    }
+    body.test-mode .test-badge { display: inline-block; }
+    .datetime { font-size: 13px; margin-bottom: 8px; opacity: 0.9; text-transform: capitalize; }
+    .header h1 { margin: 0 0 12px 0; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+    
+    .stats-row { display: flex; justify-content: space-between; background: rgba(255,255,255,0.15); padding: 12px; border-radius: 15px; margin-bottom: 12px; }
+    .stat-item { flex: 1; text-align: center; }
+    .stat-item:not(:last-child) { border-right: 1px solid rgba(255,255,255,0.2); }
+    .stat-value { font-size: 22px; font-weight: 900; }
+    .stat-label { font-size: 11px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; }
+
+    /* Шкала */
+    .progress-container { background: rgba(0,0,0,0.15); border-radius: 12px; padding: 12px; text-align: left; }
+    .progress-text { font-size: 13px; margin-bottom: 6px; display: flex; justify-content: space-between; }
+    .progress-bar-bg { background: rgba(255,255,255,0.3); height: 10px; border-radius: 5px; overflow: hidden; }
+    .progress-bar-fill { background: var(--success); width: 0%; height: 100%; transition: width 0.6s ease-out; }
+
+    /* Вкладки и Карточки */
+    .tabs { display: flex; gap: 8px; margin: 18px 0; }
+    .tab-btn { flex: 1; padding: 12px; border: none; background: white; border-radius: 14px; font-size: 15px; font-weight: bold; cursor: pointer; color: #747d8c; box-shadow: 0 3px 6px rgba(0,0,0,0.05); }
+    .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(255, 107, 129, 0.35); }
+    .section-title { font-size: 16px; font-weight: 600; margin: 20px 0 10px 4px; color: #57606f; }
+    .card { background: var(--card-bg); border-radius: 16px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 8px rgba(0,0,0,0.04); cursor: pointer; border: 2px solid transparent; }
+    .card:active { transform: scale(0.98); }
+    .card.completed { background: #eaffea; border-color: var(--success); opacity: 0.85; }
+    .card.completed .card-title { text-decoration: line-through; color: #747d8c; }
+    .card.hard-task { border-color: var(--warning); border-width: 2px; }
+    .card.hard-task.completed { background: #fff8eb; }
+    .card.interactive { border-color: var(--secondary); border-style: dashed; }
+    .card-info { flex: 1; padding-right: 12px; }
+    .card-title { font-size: 15px; font-weight: bold; margin: 0 0 4px 0; }
+    .card-desc { font-size: 13px; color: #747d8c; margin: 0; line-height: 1.3; }
+    .reward-badge { background: #ffeaa7; color: #d63031; padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 14px; white-space: nowrap; }
+    .hard-badge { background: var(--warning); color: white; }
+    .interactive-badge { background: var(--secondary); color: white; }
+
+    /* Магазин */
+    .shop-item { background: var(--card-bg); border-radius: 16px; padding: 16px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 3px 8px rgba(0,0,0,0.04); }
+    .shop-item.locked { opacity: 0.6; background: rgba(0,0,0,0.05); }
+    .buy-btn { background: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 12px; font-weight: bold; font-size: 14px; cursor: pointer; }
+    .buy-btn:disabled { background: #ced6e0; cursor: not-allowed; }
+
+    /* Кнопки внизу */
+    .footer-actions { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+    .btn-reset { background: transparent; border: 1px dashed #a4b0be; color: #747d8c; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; }
+    .btn-reset.danger { border-color: #ff6b81; color: #ff6b81; }
+    .btn-test-mode { margin-top: 20px; background: #636e72; color: white; border: none; padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer; opacity: 0.8; }
+    body.test-mode .btn-test-mode { background: #00b894; opacity: 1; }
+
+    /* МОДАЛЬНОЕ ОКНО ДЛЯ ИГР */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+    .modal-content { background: white; width: 100%; max-width: 400px; border-radius: 24px; padding: 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); position: relative; }
+    .close-modal { position: absolute; top: 15px; right: 15px; background: #f1f2f6; border: none; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; color: #2f3542; }
+    
+    /* Контент мини-игр */
+    .game-title { font-size: 20px; font-weight: bold; margin-bottom: 15px; color: var(--secondary); }
+    .game-reading-text { font-size: 20px; line-height: 1.6; margin-bottom: 25px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 12px; border-left: 4px solid var(--secondary); }
+    .game-btn { background: var(--success); color: white; border: none; padding: 14px 24px; border-radius: 16px; font-size: 18px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 4px 0 #20bf6b; margin-bottom: 10px; }
+    .game-btn:active { transform: translateY(4px); box-shadow: none; }
+    
+    .math-problem { font-size: 48px; font-weight: 900; margin: 20px 0; color: #2f3542; letter-spacing: 2px; }
+    .math-answers { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .math-answer-btn { flex: 1; min-width: 80px; background: var(--secondary); color: white; font-size: 32px; font-weight: bold; border: none; border-radius: 16px; padding: 15px 0; box-shadow: 0 4px 0 #5352ed; cursor: pointer; }
+    .math-answer-btn:active { transform: translateY(4px); box-shadow: none; }
+    
+    .logic-pattern { font-size: 38px; margin: 25px 0; background: #f1f2f6; padding: 15px 5px; border-radius: 15px; letter-spacing: 4px; }
+    .logic-question-mark { color: var(--primary); font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="test-badge">ТЕСТОВЫЙ РЕЖИМ (ПЕСОЧНИЦА)</div>
+    <div class="datetime" id="datetime">Загрузка...</div>
+    <h1>Академия Супер-Навыков</h1>
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-value"><span id="starBalance">0</span> 🌟</div><div class="stat-label">Баланс</div></div>
+      <div class="stat-item"><div class="stat-value"><span id="levelDisplay">1</span> 🏅</div><div class="stat-label">Уровень</div></div>
+      <div class="stat-item"><div class="stat-value"><span id="totalStars">0</span> 🏆</div><div class="stat-label">Опыт</div></div>
+    </div>
+    <div class="progress-container">
+      <div class="progress-text"><span>Цель на неделю:</span><span><strong id="weekProgress">0</strong> / 70 🌟</span></div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="weekBar"></div></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('missions')">🎯 Миссии</button>
+    <button class="tab-btn" onclick="switchTab('school')">📚 Школа</button>
+    <button class="tab-btn" onclick="switchTab('shop')">🎁 Магазин</button>
+  </div>
+
+  <div id="tab-missions">
+    <div class="section-title">🔥 Задание дня</div>
+    <div id="hard-mission"></div>
+    <div class="section-title">Утро и быт</div>
+    <div id="daily-missions"></div>
+  </div>
+
+  <div id="tab-school" style="display:none;">
+    <div class="section-title">Школьные квесты</div>
+    <div id="school-missions"></div>
+  </div>
+
+  <div id="tab-shop" style="display:none;">
+    <div class="section-title">Магазин наград</div>
+    <div id="shop-items"></div>
+  </div>
+
+  <div class="footer-actions">
+    <button class="btn-reset" onclick="startNewDay()">🌅 Начать новый день</button>
+    <button class="btn-reset danger" onclick="startNewWeek()">📅 Начать новую неделю</button>
+    <button class="btn-test-mode" id="testModeBtn" onclick="toggleTestMode()">⚙️ Включить тестовый режим</button>
+  </div>
+</div>
+
+<!-- Модальное окно для Интерактивных игр -->
+<div class="modal-overlay" id="gameModal">
+  <div class="modal-content">
+    <button class="close-modal" onclick="closeGame()">×</button>
+    <div id="gameContainer"></div>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(console.error);
+  });
+}
+  const PIN_CODE = "5253";
+  const XP_PER_LEVEL = 50;
+  const WEEKLY_GOAL = 70;
+
+  const missionsData = [
+    { id: 'm1', title: 'Супер-Утро', desc: 'Умыться, почистить зубы, заправить постель', cost: 1 },
+    { id: 'm2', title: 'Одеваюсь сама', desc: 'Выбрать одежду и одеться без напоминаний', cost: 1 },
+    { id: 'm3', title: 'Хранитель порядка', desc: 'Сложить все игрушки по домикам перед сном', cost: 2 },
+    { id: 'm4', title: 'Помощь семье', desc: 'Накрыть на стол, покормить питомца или полить цветы', cost: 2 }
+  ];
+
+  const schoolData = [
+    { id: 's1', title: 'Чтение (Интерактив 📱)', desc: 'Прочитать историю прямо на экране', cost: 3, interactive: 'read' },
+    { id: 's2', title: 'Математика (Интерактив 📱)', desc: 'Примеры на + и - в пределах 10', cost: 3, interactive: 'math' },
+    { id: 's3', title: 'Логика (Интерактив 📱)', desc: 'Продолжи логический ряд', cost: 3, interactive: 'logic' },
+    { id: 's4', title: 'Сыщик звуков (Офлайн)', desc: 'Найти 5 предметов на заданную букву в комнате', cost: 2 },
+    { id: 's5', title: 'Сказочник (Офлайн)', desc: 'Пересказать короткую сказку своими словами', cost: 2 },
+    { id: 's6', title: 'Мастер-Творец (Офлайн)', desc: 'Вырезать ровно по контуру или слепить поделку', cost: 2 }
+  ];
+
+  const hardTasks = [
+    { id: 'h0', title: 'Воскресный шеф', desc: 'Помочь приготовить завтрак или ужин', cost: 5 },
+    { id: 'h1', title: 'Понедельник-поэт', desc: 'Выучить наизусть небольшое стихотворение', cost: 5 },
+    { id: 'h2', title: 'Вторник-математик', desc: 'Решить 10 примеров на бумаге без ошибок', cost: 5 },
+    { id: 'h3', title: 'Среда-творец', desc: 'Сделать красивую поделку', cost: 5 },
+    { id: 'h4', title: 'Четверг-чистюля', desc: 'Полноценно убрать свою комнату', cost: 5 },
+    { id: 'h5', title: 'Пятница-книголюб', desc: 'Прочитать 5 страниц книги', cost: 5 },
+    { id: 'h6', title: 'Суббота-спортсмен', desc: 'Сделать зарядку и 20 приседаний', cost: 5 }
+  ];
+
+  const shopData = [
+    { id: 'p1', title: '15 минут мультиков', desc: 'Быстрое удовольствие', price: 5, level: 1 },
+    { id: 'p2', title: 'Вкусный десерт', desc: 'Выбрать любимое угощение', price: 10, level: 1 },
+    { id: 'p3', title: 'Выходной от уборки', desc: 'Игрушки убирают родители', price: 15, level: 2 },
+    { id: 'p4', title: 'Карманные деньги', desc: '100 реальных рублей', price: 25, level: 2 },
+    { id: 'p5', title: 'Поход в кино / парк', desc: 'Семейная вылазка', price: 50, level: 3 },
+    { id: 'p6', title: 'Желанная игрушка', desc: 'Супер-подарок', price: 100, level: 4 }
+  ];
+
+  let isTestMode = false;
+  let realState = {};
+  
+  let stars = parseInt(localStorage.getItem('stars')) || 0;
+  let totalStars = parseInt(localStorage.getItem('totalStars')) || 0;
+  let weeklyStars = parseInt(localStorage.getItem('weeklyStars')) || 0;
+  let completedTasks = JSON.parse(localStorage.getItem('completedTasks')) || {};
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function playSound(type) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+
+    if (type === 'success') {
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+      osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.2); 
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.25);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.25);
+    } else if (type === 'buy') {
+      osc.type = 'sine'; osc.frequency.setValueAtTime(659.25, audioCtx.currentTime); 
+      osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3); 
+      gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.35);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.35);
+    } else if (type === 'error') {
+      osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+    }
+  }
+
+  function updateDateTime() {
+    const now = new Date();
+    const options = { weekday: 'long', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    let dateString = now.toLocaleDateString('ru-RU', options);
+    document.getElementById('datetime').innerText = dateString.charAt(0).toUpperCase() + dateString.slice(1);
+  }
+  setInterval(updateDateTime, 1000); updateDateTime();
+
+  function saveState() {
+    if (isTestMode) return;
+    localStorage.setItem('stars', stars);
+    localStorage.setItem('totalStars', totalStars);
+    localStorage.setItem('weeklyStars', weeklyStars);
+    localStorage.setItem('completedTasks', JSON.stringify(completedTasks));
+  }
+
+  function getLevel() { return Math.floor(totalStars / XP_PER_LEVEL) + 1; }
+
+  function updateUI() {
+    document.getElementById('starBalance').innerText = stars;
+    document.getElementById('totalStars').innerText = totalStars;
+    document.getElementById('levelDisplay').innerText = getLevel();
+    document.getElementById('weekProgress').innerText = weeklyStars;
+    document.getElementById('weekBar').style.width = Math.min((weeklyStars / WEEKLY_GOAL) * 100, 100) + '%';
+    renderTasks();
+    if (document.getElementById('tab-shop').style.display === 'block') renderShop();
+  }
+
+  function toggleTestMode() {
+    isTestMode = !isTestMode;
+    const btn = document.getElementById('testModeBtn');
+    if (isTestMode) {
+      realState = { stars, totalStars, weeklyStars, completedTasks: JSON.parse(JSON.stringify(completedTasks)) };
+      stars = 999; totalStars = 250; weeklyStars = 35; completedTasks = {};
+      document.body.classList.add('test-mode'); btn.innerHTML = '❌ Выйти из тестового режима';
+      alert('Тестовый режим включен! ПИН-код отключен.');
+    } else {
+      stars = realState.stars; totalStars = realState.totalStars; weeklyStars = realState.weeklyStars; completedTasks = JSON.parse(JSON.stringify(realState.completedTasks));
+      document.body.classList.remove('test-mode'); btn.innerHTML = '⚙️ Включить тестовый режим';
+      alert('Реальные данные восстановлены!');
+    }
+    updateUI();
+  }
+
+  function handleTaskClick(id, cost, interactiveType) {
+    if (completedTasks[id]) {
+      stars = Math.max(0, stars - cost); totalStars = Math.max(0, totalStars - cost); weeklyStars = Math.max(0, weeklyStars - cost);
+      delete completedTasks[id]; saveState(); updateUI();
+    } else {
+      if (interactiveType) { openInteractiveGame(interactiveType, id, cost); } 
+      else { processTaskCompletion(id, cost); }
+    }
+  }
+
+  function processTaskCompletion(id, cost) {
+    let pinValid = isTestMode;
+    if (!pinValid) {
+      const pin = prompt(`Введите ПИН-код (5253) для начисления ${cost} 🌟:`);
+      if (pin === PIN_CODE) pinValid = true;
+      else if (pin !== null) { playSound('error'); alert("Неверный ПИН-код!"); }
+    }
+    if (pinValid) {
+      stars += cost; totalStars += cost; weeklyStars += cost; completedTasks[id] = true;
+      playSound('success'); saveState(); updateUI();
+    }
+  }
+
+  // ---- ЛОГИКА ИНТЕРАКТИВНЫХ МИНИ-ИГР ----
+  let currentGame = null;
+
+  // База текстов для чтения (без слогов)
+  const readingStories = [
+    "Жил-был маленький щенок Тяпа. Он очень любил бегать за красным мячиком. Однажды Тяпа нашел в саду большую косточку. «Вот это подарок!» — подумал щенок и радостно завилял хвостом.",
+    "В лесу жил ежик по имени Пых. Осенью он собирал желтые листья и грибы, чтобы сделать себе теплую норку. Ежик пыхтел, но был очень доволен своей работой.",
+    "Маша вышла во двор и увидела красивую бабочку. У бабочки были синие крылышки с белыми пятнышками. Она села на желтый цветок и долго пила сладкий нектар."
+  ];
+
+  // База логических рядов
+  const logicPatterns = [
+    { seq: '🍎 🍌 🍎 🍌 🍎', options: ['🍌', '🍎', '🍇'], correct: '🍌' }, // А-Б
+    { seq: '🚗 🚗 🚕 🚕 🚗', options: ['🚕', '🚗', '🚙'], correct: '🚗' }, // А-А-Б-Б
+    { seq: '🌞 🌙 ⭐ 🌞 🌙', options: ['🌞', '⭐', '🌙'], correct: '⭐' }, // А-Б-В
+    { seq: '🔴 🔵 🔵 🔴 🔵', options: ['🔴', '🔵', '🟢'], correct: '🔵' }, // А-Б-Б
+    { seq: '🐶 🐱 🐭 🐶 🐱', options: ['🐹', '🐭', '🐱'], correct: '🐭' }  // А-Б-В
+  ];
+  let currentLogicPatterns = [];
+
+  function openInteractiveGame(type, id, cost) {
+    currentGame = { type, id, cost, step: 0 };
+    document.getElementById('gameModal').style.display = 'flex';
+    
+    // Перемешиваем логические задания при старте
+    if (type === 'logic') {
+      currentLogicPatterns = [...logicPatterns].sort(() => Math.random() - 0.5).slice(0, 3);
+    }
+    renderGameStep();
+  }
+
+  function closeGame() { document.getElementById('gameModal').style.display = 'none'; currentGame = null; }
+
+  function renderGameStep() {
+    const container = document.getElementById('gameContainer');
+    
+    // 1. ИГРА: ЧТЕНИЕ
+    if (currentGame.type === 'read') {
+      const story = readingStories[Math.floor(Math.random() * readingStories.length)];
+      container.innerHTML = `
+        <div class="game-title">📖 Прочитай рассказ</div>
+        <div class="game-reading-text">${story}</div>
+        <button class="game-btn" onclick="finishInteractiveGame()">Я прочитала вслух! 🌟</button>
+      `;
+    } 
+    
+    // 2. ИГРА: МАТЕМАТИКА (+ и - до 10)
+    else if (currentGame.type === 'math') {
+      if (currentGame.step >= 3) { finishInteractiveGame(); return; }
+      
+      // Генерация примера до 10
+      let a = Math.floor(Math.random() * 9) + 1; // 1-9
+      let b = Math.floor(Math.random() * 9) + 1;
+      let isPlus = Math.random() > 0.5;
+      
+      // Защита от отрицательных чисел и чисел больше 10
+      if (!isPlus && a < b) { let temp = a; a = b; b = temp; }
+      if (isPlus && a + b > 10) { 
+        a = Math.floor(Math.random() * 5) + 1; 
+        b = Math.floor(Math.random() * 4) + 1; 
+      }
+      
+      const ans = isPlus ? (a + b) : (a - b);
+      const sign = isPlus ? '+' : '-';
+      
+      // Генерация вариантов ответа
+      let options = [ans];
+      while(options.length < 3) {
+        let wrong = ans + Math.floor(Math.random() * 5) - 2;
+        if (wrong >= 0 && wrong !== ans && !options.includes(wrong)) {
+          options.push(wrong);
+        }
+      }
+      options.sort(() => Math.random() - 0.5);
+      
+      container.innerHTML = `
+        <div class="game-title">🚀 Космический счет (${currentGame.step + 1}/3)</div>
+        <div class="math-problem">${a} ${sign} ${b} = ?</div>
+        <div class="math-answers">
+          ${options.map(opt => `<button class="math-answer-btn" onclick="checkMath(${opt}, ${ans})">${opt}</button>`).join('')}
+        </div>
+      `;
+    }
+    
+    // 3. ИГРА: ЛОГИЧЕСКИЕ РЯДЫ
+    else if (currentGame.type === 'logic') {
+      if (currentGame.step >= 3) { finishInteractiveGame(); return; }
+      
+      const pattern = currentLogicPatterns[currentGame.step];
+      
+      container.innerHTML = `
+        <div class="game-title">🧩 Продолжи ряд (${currentGame.step + 1}/3)</div>
+        <div class="logic-pattern">${pattern.seq} <span class="logic-question-mark">?</span></div>
+        <div class="math-answers">
+          ${pattern.options.map(opt => `<button class="math-answer-btn" onclick="checkLogic('${opt}', '${pattern.correct}')">${opt}</button>`).join('')}
+        </div>
+      `;
+    }
+  }
+
+  function checkMath(selected, correct) {
+    if (selected === correct) {
+      playSound('success'); currentGame.step++; setTimeout(renderGameStep, 300);
+    } else {
+      playSound('error'); alert("Ой, ошибка! Посчитай внимательно, можно использовать пальчики.");
+    }
+  }
+
+  function checkLogic(selected, correct) {
+    if (selected === correct) {
+      playSound('success'); currentGame.step++; setTimeout(renderGameStep, 300);
+    } else {
+      playSound('error'); alert("Не совсем так! Посмотри внимательно, в каком порядке идут картинки.");
+    }
+  }
+
+  function finishInteractiveGame() {
+    const { id, cost } = currentGame;
+    closeGame();
+    setTimeout(() => {
+      alert("🎉 Ура! Задание выполнено на отлично! Позови родителей для начисления звёзд.");
+      processTaskCompletion(id, cost);
+    }, 200);
+  }
+  // -------------------------
+
+  function startNewDay() {
+    if (confirm("Начать новый день? Все галочки очистятся, но звёзды сохранятся.")) { completedTasks = {}; saveState(); updateUI(); }
+  }
+
+  function startNewWeek() {
+    let pinValid = isTestMode;
+    if (!pinValid) {
+      const pin = prompt("Введите ПИН-код для сброса недели:");
+      if (pin === PIN_CODE) pinValid = true; else if (pin !== null) { playSound('error'); alert("Неверный ПИН-код!"); }
+    }
+    if (pinValid) { weeklyStars = 0; completedTasks = {}; saveState(); updateUI(); alert("Новая неделя началась!"); }
+  }
+
+  function buyReward(price, title, levelReq) {
+    if (getLevel() < levelReq) { playSound('error'); alert(`Нужен ${levelReq} уровень!`); return; }
+    if (stars >= price) {
+      if (confirm(`Потратить ${price} 🌟 на "${title}"?`)) {
+        stars -= price; playSound('buy'); saveState(); updateUI(); alert(`Награда "${title}" получена! Забери её у родителей 🎉`);
+      }
+    }
+  }
+
+  function renderTasks() {
+    const todayIndex = new Date().getDay();
+    const hardTask = hardTasks[todayIndex];
+    document.getElementById('hard-mission').innerHTML = `
+      <div class="card hard-task ${completedTasks[hardTask.id] ? 'completed' : ''}" onclick="handleTaskClick('${hardTask.id}', ${hardTask.cost}, null)">
+        <div class="card-info"><div class="card-title" style="color: #e67e22;">${completedTasks[hardTask.id] ? '✅ ' : '🔥 '} ${hardTask.title}</div><div class="card-desc">${hardTask.desc}</div></div>
+        <div class="reward-badge hard-badge">+${hardTask.cost} 🌟</div>
+      </div>`;
+
+    document.getElementById('daily-missions').innerHTML = missionsData.map(task => `
+      <div class="card ${completedTasks[task.id] ? 'completed' : ''}" onclick="handleTaskClick('${task.id}', ${task.cost}, null)">
+        <div class="card-info"><div class="card-title">${completedTasks[task.id] ? '✅ ' : '⚪ '} ${task.title}</div><div class="card-desc">${task.desc}</div></div>
+        <div class="reward-badge">+${task.cost} 🌟</div>
+      </div>`).join('');
+
+    document.getElementById('school-missions').innerHTML = schoolData.map(task => `
+      <div class="card ${task.interactive ? 'interactive' : ''} ${completedTasks[task.id] ? 'completed' : ''}" onclick="handleTaskClick('${task.id}', ${task.cost}, ${task.interactive ? `'${task.interactive}'` : 'null'})">
+        <div class="card-info"><div class="card-title">${completedTasks[task.id] ? '✅ ' : '⚪ '} ${task.title}</div><div class="card-desc">${task.desc}</div></div>
+        <div class="reward-badge ${task.interactive ? 'interactive-badge' : ''}">+${task.cost} 🌟</div>
+      </div>`).join('');
+  }
+
+  function renderShop() {
+    const currentLevel = getLevel();
+    document.getElementById('shop-items').innerHTML = shopData.map(item => {
+      const isLocked = currentLevel < item.level;
+      return `<div class="shop-item ${isLocked ? 'locked' : ''}">
+        <div class="card-info"><div class="card-title">${isLocked ? '🔒 ' : ''}${item.title} ${isLocked ? `<span style="font-size:12px; color:#e74c3c;">(Нужен ${item.level} ур.)</span>` : ''}</div><div class="card-desc">${item.desc}</div></div>
+        <button class="buy-btn" ${stars < item.price || isLocked ? 'disabled' : ''} onclick="buyReward(${item.price}, '${item.title}', ${item.level})">${item.price} 🌟</button>
+      </div>`}).join('');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-missions').style.display = 'none'; document.getElementById('tab-school').style.display = 'none'; document.getElementById('tab-shop').style.display = 'none';
+    document.getElementById('tab-' + tab).style.display = 'block'; event.target.classList.add('active');
+    if (tab === 'shop') renderShop();
+  }
+
+  updateUI();
+</script>
+</body>
+</html>
